@@ -134,6 +134,7 @@ public:
         num_cluster++;
       }
     }
+    std::cerr << frame_ << std::endl;
     std::cout << frame_ << " " << num_cluster << std::endl;
   }
 
