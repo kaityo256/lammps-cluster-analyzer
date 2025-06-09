@@ -4,13 +4,7 @@
 
 `lammps-cluster-analyzer` は、LAMMPS のトラジェクトリファイル (`lammpstrj`) を解析し、Type 1 の原子について局所密度の解析とクラスタリングを行うスタンドアロンの C++ コードです。
 
-## 🔗 リポジトリ
-
-GitHub: [https://github.com/kaityo256/lammps-cluster-analyzer](https://github.com/kaityo256/lammps-cluster-analyzer)
-
----
-
-## 🚀 ビルド方法
+## ビルド方法
 
 本リポジトリには GNU Makefile が同梱されています。以下のコマンドでビルドできます：
 
@@ -45,4 +39,5 @@ git submodule update --init --recursive
 
 ### ライセンス
 
-このリポジトリはMIT Licenseのもとで公開されています。
+このリポジトリはMIT Licenseのもとで公開されています。詳細は[LICENSE](LICENSE)ファイルを参照してください。
+
