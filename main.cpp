@@ -13,22 +13,23 @@ class LocalDensityCalculator {
 private:
   std::string filename_;
   const double mesh_size_;
+  const double density_threshold_;
   int frame_;
   lammpstrj::SystemInfo system_info_;
-  LocalDensityCalculator(const double mesh_size, const std::string &filename, const lammpstrj::SystemInfo &si)
-      : system_info_(si), mesh_size_(mesh_size) {
+  LocalDensityCalculator(const double mesh_size, const double density_threshold, const std::string &filename, const lammpstrj::SystemInfo &si)
+      : system_info_(si), mesh_size_(mesh_size), density_threshold_(density_threshold) {
     filename_ = filename;
     frame_ = 0;
   }
 
 public:
-  static std::unique_ptr<LocalDensityCalculator> create(const double mesh_size, const std::string &filename) {
+  static std::unique_ptr<LocalDensityCalculator> create(const double mesh_size, const double density_threshold, const std::string &filename) {
     auto si = lammpstrj::read_info(filename);
     if (!si) {
       std::cerr << "Error: Could not read file: " << filename << std::endl;
       return nullptr;
     }
-    return std::unique_ptr<LocalDensityCalculator>(new LocalDensityCalculator(mesh_size, filename, *si));
+    return std::unique_ptr<LocalDensityCalculator>(new LocalDensityCalculator(mesh_size, density_threshold, filename, *si));
   }
 
   void calc_temperature(const std::unique_ptr<lammpstrj::SystemInfo> &si,
@@ -110,17 +111,16 @@ public:
     const int total_cells = nx * ny * nz;
     std::vector<int> cluster(total_cells);
     std::iota(cluster.begin(), cluster.end(), 0);
-    const double density_threshold = 0.3;
     for (int iz = 0; iz < nz; iz++) {
       for (int iy = 0; iy < ny; iy++) {
         for (int ix = 0; ix < nx; ix++) {
           int i1 = pos2index(ix, iy, iz, nx, ny, nz);
           int i2 = pos2index(ix + 1, iy, iz, nx, ny, nz);
-          unite(i1, i2, density_threshold, density, cluster);
+          unite(i1, i2, density_threshold_, density, cluster);
           i2 = pos2index(ix, iy + 1, iz, nx, ny, nz);
-          unite(i1, i2, density_threshold, density, cluster);
+          unite(i1, i2, density_threshold_, density, cluster);
           i2 = pos2index(ix, iy, iz + 1, nx, ny, nz);
-          unite(i1, i2, density_threshold, density, cluster);
+          unite(i1, i2, density_threshold_, density, cluster);
         }
       }
     }
@@ -130,7 +130,7 @@ public:
     }
     int num_cluster = 0;
     for (int i = 0; i < total_cells; i++) {
-      if (cluster[i] == i && density[i] > density_threshold) {
+      if (cluster[i] == i && density[i] > density_threshold_) {
         num_cluster++;
       }
     }
@@ -196,9 +196,11 @@ int main(int argc, char *argv[]) {
     std::cerr << "Usage: " << argv[0] << " input.lammpstrj" << std::endl;
     return 1;
   }
-  double mesh_size = 2.0;
+  double mesh_size = 2.0;               // メッシュのサイズ(割り切れない場合は調整される)
+  const double density_threshold = 0.3; // 密度のしきい値。これ以上を液相とみなす。
+
   std::string filename = argv[1];
-  auto calculator = LocalDensityCalculator::create(mesh_size, filename);
+  auto calculator = LocalDensityCalculator::create(mesh_size, density_threshold, filename);
   if (!calculator) {
     std::cerr << "Failed to create LocalDensityCalculator." << std::endl;
     return 1;
