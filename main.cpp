@@ -159,11 +159,23 @@ public:
 
     // 各原子を対応するセルに割り当ててカウント
     for (const auto &atom : atoms) {
-      int ix = static_cast<int>(atom.x * mx_inv);
-      int iy = static_cast<int>(atom.y * my_inv);
-      int iz = static_cast<int>(atom.z * mz_inv);
+      double x = atom.x;
+      double y = atom.y;
+      double z = atom.z;
+      if (x < 0.0) x += si->LX;
+      if (y < 0.0) y += si->LY;
+      if (z < 0.0) z += si->LZ;
+      if (x >= si->LX) x -= si->LX;
+      if (y >= si->LY) y -= si->LY;
+      if (z >= si->LZ) z -= si->LZ;
+      
+      int ix = static_cast<int>(x * mx_inv);
+      int iy = static_cast<int>(y * my_inv);
+      int iz = static_cast<int>(z * mz_inv);
 
       int index = ix + nx * (iy + ny * iz);
+      assert(index >= 0);
+      assert(index < total_cells);
       if (atom.type == 1) {
         density[index] += 1.0;
       }
