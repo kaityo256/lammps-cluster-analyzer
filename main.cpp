@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <iomanip>
 #include <lammpstrj/lammpstrj.hpp>
+#include <map>
 #include <numeric>
 #include <sstream>
 #include <string>
@@ -96,8 +97,8 @@ public:
   }
 
   void unite(int i1, int i2, const double density_threshold, const std::vector<double> &density, std::vector<int> &cluster) {
-    if (density[i1] < density_threshold) return;
-    if (density[i2] < density_threshold) return;
+    if (density[i1] > density_threshold) return;
+    if (density[i2] > density_threshold) return;
     i1 = find(i1, cluster);
     i2 = find(i2, cluster);
     if (i1 < i2) {
@@ -136,6 +137,25 @@ public:
     }
     std::cerr << frame_ << std::endl;
     std::cout << frame_ << " " << num_cluster << std::endl;
+    // サイズ分布の計算
+    std::map<int, int> root_size;
+    for (int r : cluster) {
+      root_size[r]++;
+    }
+    // --- サイズ分布を作る（size -> 個数） ---
+    std::map<int, int> size_distribution;
+    for (auto it = root_size.begin(); it != root_size.end(); ++it) {
+      size_distribution[it->second]++;
+    }
+
+    std::ostringstream oss;
+    oss << "clustersize." << std::setfill('0') << std::setw(4) << frame_ << ".dat";
+    std::string filename = oss.str();
+    std::ofstream ofs(filename);
+    // --- 小さい順に出力 ---
+    for (auto it = size_distribution.begin(); it != size_distribution.end(); ++it) {
+      ofs << it->first << " " << it->second << std::endl;
+    }
   }
 
   void calc_density(const std::unique_ptr<lammpstrj::SystemInfo> &si,
@@ -168,7 +188,7 @@ public:
       if (x >= si->LX) x -= si->LX;
       if (y >= si->LY) y -= si->LY;
       if (z >= si->LZ) z -= si->LZ;
-      
+
       int ix = static_cast<int>(x * mx_inv);
       int iy = static_cast<int>(y * my_inv);
       int iz = static_cast<int>(z * mz_inv);
@@ -186,12 +206,10 @@ public:
     for (auto &d : density) {
       d /= cell_volume;
     }
-    /*
     std::ostringstream oss;
     oss << "density." << std::setfill('0') << std::setw(4) << frame_ << ".vtk";
     std::string filename = oss.str();
     write_vtk(filename, nx, ny, nz, density);
-    */
     clustering(nx, ny, nz, density);
     frame_++;
   }

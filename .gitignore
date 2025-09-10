@@ -1,1 +1,5 @@
 cluster-analyze
+*.dat
+*.vtk
+.vscode
+*.lammpstrj
