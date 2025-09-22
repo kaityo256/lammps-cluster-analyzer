@@ -131,7 +131,7 @@ public:
     }
     int num_cluster = 0;
     for (int i = 0; i < total_cells; i++) {
-      if (cluster[i] == i && density[i] > density_threshold_) {
+      if (cluster[i] == i && density[i] < density_threshold_) {
         num_cluster++;
       }
     }
