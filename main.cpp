@@ -97,8 +97,8 @@ public:
   }
 
   void unite(int i1, int i2, const double density_threshold, const std::vector<double> &density, std::vector<int> &cluster) {
-    if (density[i1] > density_threshold) return;
-    if (density[i2] > density_threshold) return;
+    if (density[i1] < density_threshold) return;
+    if (density[i2] < density_threshold) return;
     i1 = find(i1, cluster);
     i2 = find(i2, cluster);
     if (i1 < i2) {
@@ -131,7 +131,7 @@ public:
     }
     int num_cluster = 0;
     for (int i = 0; i < total_cells; i++) {
-      if (cluster[i] == i && density[i] < density_threshold_) {
+      if (cluster[i] == i && density[i] > density_threshold_) {
         num_cluster++;
       }
     }
