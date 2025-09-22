@@ -79,7 +79,7 @@ public:
     }
 
     ofs.close();
-    std::cout << filename << std::endl;
+    std::cerr << filename << std::endl;
   }
 
   int pos2index(int ix, int iy, int iz, int nx, int ny, int nz) {
