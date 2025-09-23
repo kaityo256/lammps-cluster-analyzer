@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++14 -O2 -Iexternal/lammpstrj/include
+CXXFLAGS = -std=c++14 -O2 -Iexternal/lammpstrj/include -Iexternal/param
 
 all: cluster-analyze
 

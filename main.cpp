@@ -5,6 +5,7 @@
 #include <lammpstrj/lammpstrj.hpp>
 #include <map>
 #include <numeric>
+#include <param.hpp>
 #include <sstream>
 #include <string>
 #include <unordered_set>
@@ -13,24 +14,28 @@ class LocalDensityCalculator {
 
 private:
   std::string filename_;
+  std::string mode_;
   const double mesh_size_;
   const double density_threshold_;
   int frame_;
   lammpstrj::SystemInfo system_info_;
-  LocalDensityCalculator(const double mesh_size, const double density_threshold, const std::string &filename, const lammpstrj::SystemInfo &si)
-      : system_info_(si), mesh_size_(mesh_size), density_threshold_(density_threshold) {
+  LocalDensityCalculator(const std::string mode, const double mesh_size, const double density_threshold, const std::string &filename, const lammpstrj::SystemInfo &si)
+      : mode_(mode), system_info_(si), mesh_size_(mesh_size), density_threshold_(density_threshold) {
     filename_ = filename;
     frame_ = 0;
+    std::cerr << "mode = " << mode_ << std::endl;
+    std::cerr << "mesh_size = " << mesh_size_ << std::endl;
+    std::cerr << "density_threshold = " << density_threshold_ << std::endl;
   }
 
 public:
-  static std::unique_ptr<LocalDensityCalculator> create(const double mesh_size, const double density_threshold, const std::string &filename) {
+  static std::unique_ptr<LocalDensityCalculator> create(const std::string mode, const double mesh_size, const double density_threshold, const std::string &filename) {
     auto si = lammpstrj::read_info(filename);
     if (!si) {
       std::cerr << "Error: Could not read file: " << filename << std::endl;
       return nullptr;
     }
-    return std::unique_ptr<LocalDensityCalculator>(new LocalDensityCalculator(mesh_size, density_threshold, filename, *si));
+    return std::unique_ptr<LocalDensityCalculator>(new LocalDensityCalculator(mode, mesh_size, density_threshold, filename, *si));
   }
 
   void calc_temperature(const std::unique_ptr<lammpstrj::SystemInfo> &si,
@@ -96,9 +101,15 @@ public:
     return index;
   }
 
-  void unite(int i1, int i2, const double density_threshold, const std::vector<double> &density, std::vector<int> &cluster) {
-    if (density[i1] < density_threshold) return;
-    if (density[i2] < density_threshold) return;
+  void unite(int i1, int i2, const std::vector<double> &density, std::vector<int> &cluster) {
+    if (mode_ == "bubble") {
+      if (density[i1] < density_threshold_) return;
+      if (density[i2] < density_threshold_) return;
+    } else {
+      if (density[i1] > density_threshold_) return;
+      if (density[i2] > density_threshold_) return;
+    }
+
     i1 = find(i1, cluster);
     i2 = find(i2, cluster);
     if (i1 < i2) {
@@ -117,11 +128,11 @@ public:
         for (int ix = 0; ix < nx; ix++) {
           int i1 = pos2index(ix, iy, iz, nx, ny, nz);
           int i2 = pos2index(ix + 1, iy, iz, nx, ny, nz);
-          unite(i1, i2, density_threshold_, density, cluster);
+          unite(i1, i2, density, cluster);
           i2 = pos2index(ix, iy + 1, iz, nx, ny, nz);
-          unite(i1, i2, density_threshold_, density, cluster);
+          unite(i1, i2, density, cluster);
           i2 = pos2index(ix, iy, iz + 1, nx, ny, nz);
-          unite(i1, i2, density_threshold_, density, cluster);
+          unite(i1, i2, density, cluster);
         }
       }
     }
@@ -131,7 +142,10 @@ public:
     }
     int num_cluster = 0;
     for (int i = 0; i < total_cells; i++) {
-      if (cluster[i] == i && density[i] > density_threshold_) {
+      if (cluster[i] != i) continue;
+      if (mode_ == "bubble" && density[i] < density_threshold_) {
+        num_cluster++;
+      } else if (mode_ == "bubble" && density[i] < density_threshold_) {
         num_cluster++;
       }
     }
@@ -223,15 +237,28 @@ public:
 };
 
 int main(int argc, char *argv[]) {
+  const std::string inputfile = "cluster-analyze.cfg";
+  param::parameter param(inputfile);
+  if (!param) {
+    std::cerr << "Error: Failed to open file \"" << inputfile << "\"." << std::endl;
+    return 1;
+  }
+
+  auto mode = param.get<std::string>("mode", "bubble");
+  if (mode != "bubble" && mode != "droplet") {
+    std::cerr << "Error: mode must be either \"droplet\" or \"bubble\"."
+              << std::endl;
+    return 1;
+  }
   if (argc != 2) {
     std::cerr << "Usage: " << argv[0] << " input.lammpstrj" << std::endl;
     return 1;
   }
-  double mesh_size = 2.0;               // メッシュのサイズ(割り切れない場合は調整される)
-  const double density_threshold = 0.3; // 密度のしきい値。これ以上を液相とみなす。
+  double mesh_size = param.get<double>("mesh_size", 2.0);                       // メッシュのサイズ(割り切れない場合は調整される)
+  const double density_threshold = param.get<double>("density_threshold", 0.3); // 密度のしきい値。これ以上を液相とみなす。
 
   std::string filename = argv[1];
-  auto calculator = LocalDensityCalculator::create(mesh_size, density_threshold, filename);
+  auto calculator = LocalDensityCalculator::create(mode, mesh_size, density_threshold, filename);
   if (!calculator) {
     std::cerr << "Failed to create LocalDensityCalculator." << std::endl;
     return 1;
