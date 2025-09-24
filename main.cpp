@@ -84,7 +84,6 @@ public:
     }
 
     ofs.close();
-    std::cerr << filename << std::endl;
   }
 
   int pos2index(int ix, int iy, int iz, int nx, int ny, int nz) {
@@ -103,11 +102,11 @@ public:
 
   void unite(int i1, int i2, const std::vector<double> &density, std::vector<int> &cluster) {
     if (mode_ == "bubble") {
-      if (density[i1] < density_threshold_) return;
-      if (density[i2] < density_threshold_) return;
-    } else {
       if (density[i1] > density_threshold_) return;
       if (density[i2] > density_threshold_) return;
+    } else {
+      if (density[i1] < density_threshold_) return;
+      if (density[i2] < density_threshold_) return;
     }
 
     i1 = find(i1, cluster);
@@ -145,7 +144,7 @@ public:
       if (cluster[i] != i) continue;
       if (mode_ == "bubble" && density[i] < density_threshold_) {
         num_cluster++;
-      } else if (mode_ == "bubble" && density[i] < density_threshold_) {
+      } else if (mode_ == "droplet" && density[i] > density_threshold_) {
         num_cluster++;
       }
     }

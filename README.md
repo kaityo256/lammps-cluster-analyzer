@@ -28,6 +28,10 @@ git submodule update --init --recursive
 ./cluster-analyze input.lammpstrj > output.dat
 ```
 
+## 設定ファイル
+
+カレントディレクトリに
+
 ### 処理内容：
 
 * LAMMPS の lammpstrj 形式のファイルを読み込み
