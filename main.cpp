@@ -139,25 +139,19 @@ public:
     for (int i = 0; i < total_cells; i++) {
       cluster[i] = find(i, cluster);
     }
-    int num_cluster = 0;
-    for (int i = 0; i < total_cells; i++) {
-      if (cluster[i] != i) continue;
-      if (mode_ == "bubble" && density[i] < density_threshold_) {
-        num_cluster++;
-      } else if (mode_ == "droplet" && density[i] > density_threshold_) {
-        num_cluster++;
-      }
-    }
-    std::cerr << frame_ << std::endl;
-    std::cout << frame_ << " " << num_cluster << std::endl;
     // サイズ分布の計算
     std::map<int, int> root_size;
-    for (int r : cluster) {
-      root_size[r]++;
+    for (int i = 0; i < total_cells; i++) {
+      if (mode_ == "bubble" && density[i] < density_threshold_) {
+        root_size[cluster[i]]++;
+      } else if (mode_ == "droplet" && density[i] > density_threshold_) {
+        root_size[cluster[i]]++;
+      }
     }
     // --- サイズ分布を作る（size -> 個数） ---
     std::map<int, int> size_distribution;
     for (auto it = root_size.begin(); it != root_size.end(); ++it) {
+      if (it->second == 1) continue; // サイズ1のクラスターは無視
       size_distribution[it->second]++;
     }
 
@@ -169,6 +163,13 @@ public:
     for (auto it = size_distribution.begin(); it != size_distribution.end(); ++it) {
       ofs << it->first << " " << it->second << std::endl;
     }
+
+    int num_cluster = 0;
+    for (const auto &kv : size_distribution) {
+      num_cluster += kv.second;
+    }
+    std::cerr << frame_ << std::endl;
+    std::cout << frame_ << " " << num_cluster << std::endl;
   }
 
   void calc_density(const std::unique_ptr<lammpstrj::SystemInfo> &si,
