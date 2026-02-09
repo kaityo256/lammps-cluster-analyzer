@@ -1,8 +1,9 @@
+
 # LAMMPS Cluster Analyzer
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-`lammps-cluster-analyzer` は、LAMMPS のトラジェクトリファイル (`lammpstrj`) を解析し、Type 1 の原子について局所密度の解析とクラスタリングを行うスタンドアロンの C++ コードです。
+`lammps-cluster-analyzer` is a standalone C++ code that analyzes LAMMPS trajectory files (`lammpstrj`) and performs local density analysis and clustering for atoms of Type 1.
 
 ## Dependencies
 
@@ -13,10 +14,9 @@ All dependencies are header-only libraries included via `external/`:
 | [lammpstrj-parser](https://github.com/wtnb-appi/lammpstrj-parser) | LAMMPS trajectory reader | MIT |
 | [cxxopts](https://github.com/jarro2783/cxxopts) | Command-line parser | MIT |
 
+## Build Instructions
 
-## ビルド方法
-
-本リポジトリには GNU Makefile が同梱されています。以下のコマンドでビルドできます：
+This repository includes a GNU Makefile. You can build the code with the following commands:
 
 ```bash
 git clone --recursive https://github.com/kaityo256/lammps-cluster-analyzer.git
@@ -24,59 +24,61 @@ cd lammps-cluster-analyzer
 make
 ```
 
-ビルドが完了すると、実行ファイル cluster-analyze が生成されます。
+After a successful build, the executable `cluster-analyze` will be generated.
 
-外部ライブラリ`lammpstrj-parser`は Git Submoduleとして管理されています。クローン時に `--recursive` をつけるか、以下で初期化してください：
+The external library `lammpstrj-parser` is managed as a Git submodule.  
+Be sure to clone the repository with the `--recursive` option, or initialize it manually as follows:
 
 ```sh
 git submodule update --init --recursive
 ```
 
-## 使い方
+## Usage
 
 ```sh
 ./cluster-analyze input.lammpstrj > output.dat
 ```
 
-## コマンドラインオプション
+## Command-line Options
 
-本プログラムは、LAMMPS のトラジェクトリファイル（`.lammpstrj`）を入力として、クラスタ解析を行います。  
-基本的な使い方は以下の通りです。
+This program takes a LAMMPS trajectory file (`.lammpstrj`) as input and performs cluster analysis.  
+The basic usage is as follows:
 
 ```bash
 cluster-analyze [options] filename
 ```
 
-### 位置引数
+### Positional Argument
 
-| 引数名 | 説明 |
+| Argument | Description |
 |---|---|
-| `filename` | 解析対象となる LAMMPS トラジェクトリファイル（`.lammpstrj`） |
+| `filename` | LAMMPS trajectory file (`.lammpstrj`) to be analyzed |
 
 ---
 
-### オプション一覧
+### Option List
 
-| 短い形式 | 長い形式 | 型 | デフォルト | 説明 |
+| Short | Long | Type | Default | Description |
 |---|---|---|---|---|
-| `-m` | `--mode` | string | `bubble` | 解析モードを指定します。`bubble` または `droplet` を指定できます。 |
-| `-s` | `--mesh-size` | double | `2.0` | 解析に用いるメッシュサイズを指定します。 |
-| `-t` | `--density-threshold` | double | `0.3` | 各セルの密度のしきい値。この値より高いセルを液相、低いセルを気相として分類します。 |
-| `-v` | `--vtk` | bool | `false` | 指定すると、解析結果を VTK 形式で出力します。 |
-| `-h` | `--help` | – | – | 使用方法およびオプション一覧を表示します。 |
+| `-m` | `--mode` | string | `bubble` | Specifies the analysis mode. Either `bubble` or `droplet` can be selected. |
+| `-s` | `--mesh-size` | double | `2.0` | Mesh size used for the analysis. |
+| `-t` | `--density-threshold` | double | `0.3` | Density threshold for each cell. Cells with density above this value are treated as liquid phase, and those below as gas phase. |
+| `-v` | `--vtk` | bool | `false` | If specified, outputs the analysis results in VTK format. |
+| `-h` | `--help` | – | – | Displays usage information and the list of available options. |
 
 ---
 
-### 処理内容：
+### Processing Overview
 
-* LAMMPS の lammpstrj 形式のファイルを読み込み
-* 各フレームについて:
-    * Type == 1 の原子の局所密度を計算
-    * 密度がしきい値以上のセルを液相とみなす
-    * 液相セルを隣接性に基づいてクラスタリング（サイトパーコレーション）
-    * クラスター数を標準出力に表示
+* Reads a LAMMPS trajectory file in `lammpstrj` format
+* For each frame:
+    * Computes the local density of atoms with `Type == 1`
+    * Classifies cells with density above the threshold as liquid phase
+    * Performs clustering of liquid-phase cells based on adjacency (site percolation)
+    * Outputs the number of clusters to standard output
 
-### ライセンス
+### License
 
-このリポジトリはMIT Licenseのもとで公開されています。詳細は[LICENSE](LICENSE)ファイルを参照してください。
+This repository is released under the MIT License.  
+See the [LICENSE](LICENSE) file for details.
 
