@@ -281,32 +281,25 @@ auto parse_argument(int argc, char **argv) {
 }
 
 int main(int argc, char *argv[]) {
-  auto result = parse_argument(argc, argv);
-  std::cout << result["mode"].as<std::string>() << std::endl;
-  std::cout << result["filename"].as<std::string>() << std::endl;
-  return 0;
-
-  const std::string inputfile = "cluster-analyze.cfg";
-  param::parameter param(inputfile);
-  if (!param) {
-    std::cerr << "Error: Failed to open file \"" << inputfile << "\"." << std::endl;
+  if (argc != 2) {
+    std::cerr << "Usage: " << argv[0] << " input.lammpstrj" << std::endl;
     return 1;
   }
+  auto result = parse_argument(argc, argv);
+  auto mode = result["mode"].as<std::string>();
+  auto filename = result["filename"].as<std::string>();
+  auto mesh_size = result["mesh-size"].as<double>();                       // メッシュのサイズ(割り切れない場合は調整される)
+  const auto density_threshold = result["density-threshold"].as<double>(); // 密度のしきい値。これ以上を液相とみなす。
 
-  auto mode = param.get<std::string>("mode", "bubble");
+  std::cout << mode << std::endl;
+  std::cout << filename << std::endl;
+  std::cout << mesh_size << std::endl;
+  std::cout << density_threshold << std::endl;
   if (mode != "bubble" && mode != "droplet") {
     std::cerr << "Error: mode must be either \"droplet\" or \"bubble\"."
               << std::endl;
     return 1;
   }
-  if (argc != 2) {
-    std::cerr << "Usage: " << argv[0] << " input.lammpstrj" << std::endl;
-    return 1;
-  }
-  double mesh_size = param.get<double>("mesh_size", 2.0);                       // メッシュのサイズ(割り切れない場合は調整される)
-  const double density_threshold = param.get<double>("density_threshold", 0.3); // 密度のしきい値。これ以上を液相とみなす。
-
-  std::string filename = argv[1];
   auto calculator = LocalDensityCalculator::create(mode, mesh_size, density_threshold, filename);
   if (!calculator) {
     std::cerr << "Failed to create LocalDensityCalculator." << std::endl;
