@@ -4,6 +4,16 @@
 
 `lammps-cluster-analyzer` は、LAMMPS のトラジェクトリファイル (`lammpstrj`) を解析し、Type 1 の原子について局所密度の解析とクラスタリングを行うスタンドアロンの C++ コードです。
 
+## Dependencies
+
+All dependencies are header-only libraries included via `external/`:
+
+| Library | Purpose | License |
+|----------|----------|----------|
+| [lammpstrj-parser](https://github.com/wtnb-appi/lammpstrj-parser) | LAMMPS trajectory reader | MIT |
+| [cxxopts](https://github.com/jarro2783/cxxopts) | Command-line parser | MIT |
+
+
 ## ビルド方法
 
 本リポジトリには GNU Makefile が同梱されています。以下のコマンドでビルドできます：
@@ -28,26 +38,34 @@ git submodule update --init --recursive
 ./cluster-analyze input.lammpstrj > output.dat
 ```
 
-## 設定ファイル
+## コマンドラインオプション
 
-カレントディレクトリに`cluster-analyze.cfg`というファイルを作成することでパラメータを設定します。このファイルがないと実行時にエラーになります。実行可能ファイル`cluster-analyze`と同じ場所ではなく、実行場所に必要であることに注意。
+本プログラムは、LAMMPS のトラジェクトリファイル（`.lammpstrj`）を入力として、クラスタ解析を行います。  
+基本的な使い方は以下の通りです。
 
-ファイルには以下のような内容を設定します。
-
-```cfg
-mode = bubble
-mesh_size = 2.0
-density_threshold = 0.3
+```bash
+cluster-analyze [options] filename
 ```
 
-それぞれの意味は以下の通り。
+### 位置引数
 
-| パラメータ名        | 型       | 説明                                                                 | 省略時のデフォルト値 |
-|---------------------|----------|----------------------------------------------------------------------|----------------------|
-| mode                | 文字列   | `bubble` または `droplet` を指定する。                               | （必須）             |
-| mesh_size           | 実数     | メッシュサイズ。                                                     | 2.0                  |
-| density_threshold   | 実数     | 各セルの密度のしきい値。これより高いセルを液相、低いセルを気相とみなす。 | 0.3                  |
+| 引数名 | 説明 |
+|---|---|
+| `filename` | 解析対象となる LAMMPS トラジェクトリファイル（`.lammpstrj`） |
 
+---
+
+### オプション一覧
+
+| 短い形式 | 長い形式 | 型 | デフォルト | 説明 |
+|---|---|---|---|---|
+| `-m` | `--mode` | string | `bubble` | 解析モードを指定します。`bubble` または `droplet` を指定できます。 |
+| `-s` | `--mesh-size` | double | `2.0` | 解析に用いるメッシュサイズを指定します。 |
+| `-t` | `--density-threshold` | double | `0.3` | 各セルの密度のしきい値。この値より高いセルを液相、低いセルを気相として分類します。 |
+| `-v` | `--vtk` | bool | `false` | 指定すると、解析結果を VTK 形式で出力します。 |
+| `-h` | `--help` | – | – | 使用方法およびオプション一覧を表示します。 |
+
+---
 
 ### 処理内容：
 

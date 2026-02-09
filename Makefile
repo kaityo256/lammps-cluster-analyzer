@@ -3,7 +3,7 @@ CXXFLAGS = -std=c++14 -O2 -Iexternal/lammpstrj-parser/include -Iexternal/cxxopts
 
 all: cluster-analyze
 
-cluster-analyze: main.cpp
+cluster-analyze: main.cpp local_density_calculator.hpp
 	$(CXX) $(CXXFLAGS) main.cpp -o $@
 
 .PHONY: clean
