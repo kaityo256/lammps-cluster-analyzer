@@ -1,5 +1,5 @@
 [submodule "external/lammpstrj"]
-	path = external/lammpstrj
+	path = external/lammpstrj-parser
 	url = https://github.com/kaityo256/lammpstrj-parser
 [submodule "external/param"]
 	path = external/param
