@@ -6,7 +6,6 @@
 #include <lammpstrj/lammpstrj.hpp>
 #include <map>
 #include <numeric>
-#include <param.hpp>
 #include <sstream>
 #include <string>
 #include <unordered_set>
