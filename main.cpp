@@ -61,12 +61,6 @@ int main(int argc, char *argv[]) {
   auto mesh_size = result["mesh-size"].as<double>();                       // メッシュのサイズ(割り切れない場合は調整される)
   const auto density_threshold = result["density-threshold"].as<double>(); // 密度のしきい値。これ以上を液相とみなす。
   auto write_vtk = result["vtk"].as<bool>();
-
-  std::cout << mode << std::endl;
-  std::cout << filename << std::endl;
-  std::cout << mesh_size << std::endl;
-  std::cout << density_threshold << std::endl;
-  std::cout << write_vtk << std::endl;
   if (mode != "bubble" && mode != "droplet") {
     std::cerr << "Error: mode must be either \"droplet\" or \"bubble\"."
               << std::endl;

@@ -1,4 +1,5 @@
 #include <cassert>
+#include <fstream>
 #include <lammpstrj/lammpstrj.hpp>
 #include <map>
 #include <numeric>
@@ -12,14 +13,17 @@ private:
   const double density_threshold_;
   const bool write_vtk_;
   int frame_;
+  std::ofstream ofs_;
   lammpstrj::SystemInfo system_info_;
   LocalDensityCalculator(const std::string mode, const double mesh_size, const double density_threshold, const bool write_vtk, const std::string &filename, const lammpstrj::SystemInfo &si)
       : mode_(mode), system_info_(si), mesh_size_(mesh_size), density_threshold_(density_threshold), write_vtk_(write_vtk) {
     filename_ = filename;
     frame_ = 0;
+    ofs_.open("cluster_count.dat");
     std::cerr << "mode = " << mode_ << std::endl;
     std::cerr << "mesh_size = " << mesh_size_ << std::endl;
     std::cerr << "density_threshold = " << density_threshold_ << std::endl;
+    std::cerr << "write_vtk = " << (write_vtk_ ? "true" : "false") << std::endl;
   }
 
 public:
@@ -163,7 +167,7 @@ public:
       num_cluster += kv.second;
     }
     std::cerr << frame_ << std::endl;
-    std::cout << frame_ << " " << num_cluster << std::endl;
+    ofs_ << frame_ << " " << num_cluster << std::endl;
   }
 
   void calc_density(const std::unique_ptr<lammpstrj::SystemInfo> &si,
