@@ -4,3 +4,6 @@
 [submodule "external/param"]
 	path = external/param
 	url = https://github.com/kaityo256/param.git
+[submodule "external/cxxopts"]
+	path = external/cxxopts
+	url = https://github.com/jarro2783/cxxopts.git
