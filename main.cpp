@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstdio>
+#include <cxxopts.hpp>
 #include <iomanip>
 #include <lammpstrj/lammpstrj.hpp>
 #include <map>
@@ -236,7 +237,55 @@ public:
   }
 };
 
+auto parse_argument(int argc, char **argv) {
+  cxxopts::Options options(
+      "cluster-analyze",
+      "LAMMPS cluster analyzer");
+
+  // LAMMPSTRJ file
+  options.add_options("positional")("filename", "LAMMPS trajectory file (.lammpstrj)", cxxopts::value<std::string>());
+  options.parse_positional({"filename"});
+  // mode
+  options.add_options()("m,mode",
+                        "Analysis mode: bubble or droplet",
+                        cxxopts::value<std::string>()->default_value("bubble"));
+
+  // mesh size
+  options.add_options()("s,mesh-size",
+                        "Mesh size for analysis",
+                        cxxopts::value<double>()->default_value("2.0"));
+
+  // density threshold
+  options.add_options()("t,density-threshold",
+                        "Density threshold for phase classification",
+                        cxxopts::value<double>()->default_value("0.3"));
+
+  // help
+  options.add_options()("h,help",
+                        "Print usage");
+
+  auto result = options.parse(argc, argv);
+
+  if (result.count("help")) {
+    std::cout << options.help() << std::endl;
+    std::exit(0);
+  }
+
+  if (!result.count("filename")) {
+    std::cerr << "Error: filename is required.\n\n"
+              << options.help({"", "positional"}) << std::endl;
+    exit(1);
+  }
+
+  return result;
+}
+
 int main(int argc, char *argv[]) {
+  auto result = parse_argument(argc, argv);
+  std::cout << result["mode"].as<std::string>() << std::endl;
+  std::cout << result["filename"].as<std::string>() << std::endl;
+  return 0;
+
   const std::string inputfile = "cluster-analyze.cfg";
   param::parameter param(inputfile);
   if (!param) {
