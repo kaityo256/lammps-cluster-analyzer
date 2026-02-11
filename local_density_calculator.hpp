@@ -1,3 +1,5 @@
+#include <iomanip>
+#include <cmath>
 #include <cassert>
 #include <fstream>
 #include <lammpstrj/lammpstrj.hpp>
